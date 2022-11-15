@@ -9,7 +9,7 @@
         }
 
         .node:hover {
-          fill: #000;
+          filter: brightness(0%);
         }
 
         .link {
@@ -25,11 +25,11 @@
         }
 
         .node--source {
-          fill: #2ca02c;
+          fill: #2ca02c !important;
         }
 
         .node--target {
-          fill: #d62728;
+          fill: #d62728 !important;
         }
 
         .link--source,
@@ -169,7 +169,7 @@
           if (categories.includes(d.source.parent.data.key)) {
               return colors(d.source.parent.data.key);
           }
-                                        });
+          });
       // node creation
       node = node
         // leaves data
@@ -184,7 +184,6 @@
           // getting each key name
           .append("tspan")
           .text(function(d) { 
-            /* Uncomment this out for the two long labels to go onto a new line
             if (d.data.key.indexOf("(") != -1) {
               d3.select(this).attr("x", "0");
               d3.select(this.parentElement).append("tspan")
@@ -192,10 +191,22 @@
               .attr("dy","1em")
                 .on("mouseover", mouseovered)
                 .on("mouseout", mouseouted)
-              .text("("+d.data.key.split("(")[1]);
+              .text("("+d.data.key.split("(")[1])
+              .attr("fill", function (d) { 
+              const categories = ["IV", "TF", "EAC", "HWR", "EF", "SP"];
+                if (categories.includes(d.parent.data.key)) {
+                  return colors(d.parent.data.key);
+                }
+              })
               return d.data.key.split("(")[0]
-            }*/
+            }
             return d.data.key; 
+          })
+          .style("fill", function (d) { 
+              const categories = ["IV", "TF", "EAC", "HWR", "EF", "SP"];
+              if (categories.includes(d.parent.data.key)) {
+                  return colors(d.parent.data.key);
+              }
           })
           .on("mouseover", mouseovered)
           .on("mouseout", mouseouted);
@@ -206,7 +217,7 @@
     function mouseovered(d) { console.log(d);
       // reset values
       node
-          .each(function(n) { n.target = n.source = n.not = false; });
+          .each(function(n) { n.target = n.source = n.not = n.cur = false; });
 
       // getting links that are applicable
       link
@@ -220,7 +231,7 @@
       node
           .classed("node--target", function(n) { return n.target; })
           .classed("node--source", function(n) { return n.source; })
-          .classed("node--not", function(n) { return n.not; });
+          .classed("node--not", function(n) { return n.not; })
     }
 
     // function after cursor is off element
