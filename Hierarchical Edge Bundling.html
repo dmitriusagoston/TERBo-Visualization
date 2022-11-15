@@ -1,276 +1,300 @@
 <!DOCTYPE html>
-<meta charset="utf-8">
-<style>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        .node {
+          font: 300 11px "Helvetica Neue", Helvetica, Arial, sans-serif;
+          fill: #777;
+        }
 
-.node {
-  font: 300 11px "Helvetica Neue", Helvetica, Arial, sans-serif;
-  fill: #777;
-}
+        .node:hover {
+          fill: #000;
+        }
 
-.node:hover {
-  fill: #000;
-}
+        .link {
+          stroke-opacity: 0.6;
+          fill: none;
+          pointer-events: none;
+        }
 
-.link {
-  stroke-opacity: 0.6;
-  fill: none;
-  pointer-events: none;
-}
+        .node:hover,
+        .node--source,
+        .node--target {
+          font-weight: 700;
+        }
 
-.node:hover,
-.node--source,
-.node--target {
-  font-weight: 700;
-}
+        .node--source {
+          fill: #2ca02c;
+        }
 
-.node--source {
-  fill: #2ca02c;
-}
+        .node--target {
+          fill: #d62728;
+        }
 
-.node--target {
-  fill: #d62728;
-}
+        .link--source,
+        .link--target {
+          stroke-opacity: 1;
+          stroke-width: 2px;
+        }
 
-.link--source,
-.link--target {
-  stroke-opacity: 1;
-  stroke-width: 2px;
-}
+        .link--source {
+          stroke: #d62728 !important;
+        }
 
-.link--source {
-  stroke: #d62728 !important;
-}
+        .link--target {
+          stroke: #2ca02c !important;
+        }
 
-.link--target {
-  stroke: #2ca02c !important;
-}
-    
-.link--not {
-  stroke: #bbb !important;
-}
+        .link--not {
+          stroke: #bbb !important;
+        }
 
-</style>
-<title>TERBo Visualization</title>
-
+        textPath {
+            font: 15px "Helvetica Neue", Helvetica, Arial, sans-serif;
+        }
+        h1,p {
+            text-align: center;
+        }
+    </style>
+    <title>TERBo Visualization</title>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+</head>
 <body>
-    
-<h1>TERBo Visualization</h1>
-    
-<script src="https://d3js.org/d3.v5.min.js"></script>
-<script>
-    
-/*
-Sources used:
-https://bl.ocks.org/mbostock/7607999
-http://sureshlodha.github.io/CMPS165Examples/RadialLayout/index.html
-d3-book-master
-*/  
-// dimensions to be used
-var diameter = 700,
-    radius = diameter / 2,
-    innerRadius = radius - 120;
+    <h1>TERBo Visualization</h1>
+    <script>
+    /*
+    Sources used:
+    https://bl.ocks.org/mbostock/7607999
+    http://sureshlodha.github.io/CMPS165Examples/RadialLayout/index.html
+    d3-book-master
+    */  
+    // dimensions to be used
+    var diameter = 700,
+        radius = diameter / 2,
+        innerRadius = radius - 120;
 
-// defining cluster element
-var cluster = d3.cluster()
-    .size([360, innerRadius]);
+    // defining cluster element
+    var cluster = d3.cluster()
+        .size([360, innerRadius]);
 
-// defintion of arc
-var arc = d3.arc()
-    .innerRadius(radius - 120)
-    .outerRadius(radius - 80);
+    // defintion of arc
+    var arc = d3.arc()
+        .innerRadius(radius - 120)
+        .outerRadius(radius - 80);
 
-// definition of lines to connect dependencies
-var line = d3.radialLine()
-    .curve(d3.curveBundle.beta(0.85))
-    .radius(function(d) { return d.y; })
-    .angle(function(d) { return d.x / 180 * Math.PI; });
+    // definition of lines to connect dependencies
+    var line = d3.radialLine()
+        .curve(d3.curveBundle.beta(0.85))
+        .radius(function(d) { return d.y; })
+        .angle(function(d) { return d.x / 180 * Math.PI; });
 
-// svg creation
-var svg = d3.select("body").append("svg")
-    .attr("width", diameter + 500)
-    .attr("height", diameter + 250)
-  .append("g")
-    .attr("transform", "translate(" + (radius + 200) + "," + (radius + 100) + ")");
+    // svg creation
+    var svg = d3.select("body").append("svg")
+        .attr("width", diameter + 500)
+        .attr("height", diameter + 250)
+      .append("g")
+        .attr("transform", "translate(" + (radius + 200) + "," + (radius + 100) + ")");
 
-// pie chart created to help label macro categories
-var pie = d3.pie()
-    .value(function(d) { return d.value; } );
+    // pie chart created to help label macro categories
+    var pie = d3.pie()
+        .value(function(d) { return d.value; } );
 
-// data for macro categories
-var dataset = { "Earth Futures":25, "Sociopolitical":15.625, "Integrity & Veracity":15.625, "Technological fairness":15.625, "Economic & Asset Considerations":15.625, "Health, Well-being, Resilience":12.5 };
-    
-//Set up groups
-var arcs = svg.selectAll("g.arc")
-    .data(pie(d3.entries(dataset)))
-    .enter()
-    .append("g")
-    .attr("class", "arc")
-    .attr("transform", "translate(" + 0 + "," + 0 + ")");
+    // data for macro categories
+    var dataset = { "Earth Futures":25, "Sociopolitical":15.625, "Integrity & Veracity":15.625, "Technological Fairness":15.625, "Economic & Asset Considerations":15.625, "Health, Well-being, Resilience":12.5 };
 
-// defining link and node for edge bundling
-var link = svg.append("g").selectAll(".link"),
-    node = svg.append("g").selectAll(".node");
+    //Set up groups
+    var arcs = svg.selectAll("g.arc")
+        .data(pie(d3.entries(dataset)))
+        .enter()
+        .append("g")
+        .attr("class", "arc")
+        .attr("transform", "translate(" + 0 + "," + 0 + ")");
 
-// getting data from json to be used
-d3.json("TERBO.json").then(function(classes) {
+    // defining link and node for edge bundling
+    var link = svg.append("g").selectAll(".link"),
+        node = svg.append("g").selectAll(".node");
 
-  // color scheme for categories
-  var colors = d3.scaleOrdinal()
-    .domain(["EF", "SP", "IV", "TF", "EAC", "HWR"])
-    .range(["#77933C", "#8064A2", "#4F81BD",
-           "#4BACC6", "#C0504D", "#F79646"]);
-  
-  // root of hierarchy
-  var root = packageHierarchy(classes)
-      .sum(function(d) { return d.size; });
+    // getting data from json to be used
+    d3.json("TERBO.json").then(function(classes) {
 
-  // giving cluster the root
-  cluster(root);
-  console.log(root)
-  // checking what the leaves are
-  leaves = packageImports(root.leaves())
-  console.log(leaves)
-    
-  // Draw arc paths
-  arcs.append("path")
-    .attr("fill", function(d, i) {
-        return colors(i);
-    })
-    .attr("id", function(d, i) { console.log(d); return `arc_${i}`})
-    .attr("d", arc);
-    
-  // arc labels for each macro category
-  arcs.append("text")
-    .attr("dx", 10)
-    .attr("dy", 30)
-    .append("textPath")
-    .attr("href", (d, i) => `#arc_${i}`)
-    .text(function(d) { return d.data.key; })
-    .attr("fill","black");
-    
-  // link creations
-  link = link
-      // leaves data
-      .data(packageImports(root.leaves()))
-    .enter().append("path")
-      // connecting paths with sources and targets
-      .each(function(d) { d.source = d[0], d.target = d[d.length - 1]; })
-      .attr("class", "link")
-      // drawingn line
-      .attr("d", line)
-      // giving line color based off which class it is in
-      .style("stroke", function (d) { 
-      const categories = ["IV", "TF", "EAC", "HWR", "EF", "SP"];
-      if (categories.includes(d.source.parent.data.key)) {
-          return colors(d.source.parent.data.key);
-      }
-                                    });
-  // node creation
-  node = node
-    // leaves data
-    .data(root.leaves())
-    .enter().append("text")
-      .attr("class", "node")
-      .attr("dy", "0.31em")
-      // format to rotate and align correctly
-      .attr("transform", function(d) { return "rotate(" + (d.x - 90) + ")translate(" + (d.y + 48) + ",0)" + (d.x < 180 ? "" : "rotate(180)"); })
-      // put text at start of path
-      .attr("text-anchor", function(d) { return d.x < 180 ? "start" : "end"; })
-      // geting each key name
-      .text(function(d) { return d.data.key; })
-      .on("mouseover", mouseovered)
-      .on("mouseout", mouseouted);
-			
-});
+      // color scheme for categories
+      var colors = d3.scaleOrdinal()
+        .domain(["EF", "SP", "IV", "TF", "EAC", "HWR"])
+        .range(["#77933C", "#8064A2", "#4F81BD",
+               "#4BACC6", "#C0504D", "#F79646"]);
 
-// function for when cursor is over element
-function mouseovered(d) {
-  // reset values
-  node
-      .each(function(n) { n.target = n.source = n.not = false; });
+      // root of hierarchy
+      var root = packageHierarchy(classes)
+          .sum(function(d) { return d.size; });
 
-  // getting links that are applicable
-  link
-      .classed("link--target", function(l) { if (l.target === d) return l.source.source = true; })
-      .classed("link--source", function(l) { if (l.source === d) return l.target.target = true; })
-      .classed("link--not", function(l) { if (l.target !== d && l.source !== d) return l.not = true; })
-    .filter(function(l) { return l.target === d || l.source === d; })
-      .raise();
-  
-  // node classification
-  node
-      .classed("node--target", function(n) { return n.target; })
-      .classed("node--source", function(n) { return n.source; })
-      .classed("node--not", function(n) { return n.not; });
-}
+      // giving cluster the root
+      cluster(root);
+      console.log(root)
+      // checking what the leaves are
+      leaves = packageImports(root.leaves())
+      console.log(leaves)
 
-// function after cursor is off element
-function mouseouted(d) {
-  // reset link classifications
-  link
-      .classed("link--target", false)
-      .classed("link--source", false)
-      .classed("link--not", false);
+      // Draw arc paths
+      arcs.append("path")
+        .attr("fill", function(d, i) {
+            return colors(i);
+        })
+        .attr("id", function(d, i) { console.log(d); return `arc_${i}`})
+        .attr("d", arc);
 
-  // reset node classifications
-  node
-      .classed("node--target", false)
-      .classed("node--source", false);
-}
+      // arc labels for each macro category
+      arcs.append("text")
+        .attr("dy", 30)
+        .append("textPath")
+        .attr("href", (d, i) => `#arc_${i}`)
+        .text(function(d) { return d.data.key; })
+        .attr("fill","black")
+        .attr("text-anchor", "middle")
+        .attr("startOffset", "22.5%");
 
-// Lazily construct the package hierarchy from class names.
-function packageHierarchy(classes) {
-  var map = {};
+      // link creations
+      link = link
+          // leaves data
+          .data(packageImports(root.leaves()))
+        .enter().append("path")
+          // connecting paths with sources and targets
+          .each(function(d) { d.source = d[0], d.target = d[d.length - 1]; })
+          .attr("class", "link")
+          // drawingn line
+          .attr("d", line)
+          // giving line color based off which class it is in
+          .style("stroke", function (d) { 
+          const categories = ["IV", "TF", "EAC", "HWR", "EF", "SP"];
+          if (categories.includes(d.source.parent.data.key)) {
+              return colors(d.source.parent.data.key);
+          }
+                                        });
+      // node creation
+      node = node
+        // leaves data
+        .data(root.leaves())
+        .enter().append("text")
+          .attr("class", "node")
+          .attr("dy", "0.31em")
+          // format to rotate and align correctly
+          .attr("transform", function(d) { return "rotate(" + (d.x - 90) + ")translate(" + (d.y + 48) + ",0)" + (d.x < 180 ? "" : "rotate(180)"); })
+          // put text at start of path
+          .attr("text-anchor", function(d) { return d.x < 180 ? "start" : "end"; })
+          // getting each key name
+          .append("tspan")
+          .text(function(d) { 
+            /* Uncomment this out for the two long labels to go onto a new line
+            if (d.data.key.indexOf("(") != -1) {
+              d3.select(this).attr("x", "0");
+              d3.select(this.parentElement).append("tspan")
+              .attr("x", "0")
+              .attr("dy","1em")
+                .on("mouseover", mouseovered)
+                .on("mouseout", mouseouted)
+              .text("("+d.data.key.split("(")[1]);
+              return d.data.key.split("(")[0]
+            }*/
+            return d.data.key; 
+          })
+          .on("mouseover", mouseovered)
+          .on("mouseout", mouseouted);
 
-  function find(name, data) {
-    var node = map[name], i;
-    if (!node) {
-      node = map[name] = data || {name: name, children: []};
-      if (name.length) {
-        // set node parent
-        node.parent = find(name.substring(0, i = name.lastIndexOf(".")));
-        // add to children array
-        node.parent.children.push(node);
-        // set key of node
-        node.key = name.substring(i + 1);
-      }
-      
-    }
-    // returns finished node
-    return node;
-  }
-
-  classes.forEach(function(d) {
-    // setting names
-    find(d.name, d);
-  });
-
-  // returns new hierarchal map
-  return d3.hierarchy(map[""]);
-}
-
-// Return a list of imports for the given array of nodes.
-function packageImports(nodes) {
-  var map = {},
-      imports = [];
-
-  // Compute a map from name to node.
-  nodes.forEach(function(d) {
-    map[d.data.name] = d;
-  });
-
-  // For each import, construct a link from the source to target node.
-  nodes.forEach(function(d) {
-    if (d.data.imports) d.data.imports.forEach(function(i) {
-      imports.push(map[d.data.name].path(map[i]));
     });
-  });
 
-  return imports;
-}
+    // function for when cursor is over element
+    function mouseovered(d) { console.log(d);
+      // reset values
+      node
+          .each(function(n) { n.target = n.source = n.not = false; });
 
-</script>
+      // getting links that are applicable
+      link
+          .classed("link--target", function(l) { if (l.target === d) return l.source.source = true; })
+          .classed("link--source", function(l) { if (l.source === d) return l.target.target = true; })
+          .classed("link--not", function(l) { if (l.target !== d && l.source !== d) return l.not = true; })
+        .filter(function(l) { return l.target === d || l.source === d; })
+          .raise();
 
-<p>
-  Created By: Dmitrius Agoston & Inan Xu<br>
-</p>
+      // node classification
+      node
+          .classed("node--target", function(n) { return n.target; })
+          .classed("node--source", function(n) { return n.source; })
+          .classed("node--not", function(n) { return n.not; });
+    }
+
+    // function after cursor is off element
+    function mouseouted(d) {
+      // reset link classifications
+      link
+          .classed("link--target", false)
+          .classed("link--source", false)
+          .classed("link--not", false);
+
+      // reset node classifications
+      node
+          .classed("node--target", false)
+          .classed("node--source", false);
+    }
+
+    // Lazily construct the package hierarchy from class names.
+    function packageHierarchy(classes) {
+      var map = {};
+
+      function find(name, data) {
+        var node = map[name], i;
+        if (!node) {
+          node = map[name] = data || {name: name, children: []};
+          if (name.length) {
+            // set node parent
+            node.parent = find(name.substring(0, i = name.lastIndexOf(".")));
+            // add to children array
+            node.parent.children.push(node);
+            // set key of node
+            node.key = name.substring(i + 1);
+          }
+
+        }
+        // returns finished node
+        return node;
+      }
+
+      classes.forEach(function(d) {
+        // setting names
+        find(d.name, d);
+      });
+
+      // returns new hierarchal map
+      return d3.hierarchy(map[""]);
+    }
+
+    // Return a list of imports for the given array of nodes.
+    function packageImports(nodes) {
+      var map = {},
+          imports = [];
+
+      // Compute a map from name to node.
+      nodes.forEach(function(d) {
+        map[d.data.name] = d;
+      });
+
+      // For each import, construct a link from the source to target node.
+      nodes.forEach(function(d) {
+        if (d.data.imports) d.data.imports.forEach(function(i) {
+          imports.push(map[d.data.name].path(map[i]));
+        });
+      });
+
+      return imports;
+    }
+    </script>
+    
+    <p>Created by</p>
+    <p>
+        Dmitrius Agoston & Inan Xu<br>
+        in collaboration with Suresh K. Lodha (lodha@soe.ucsc.edu)<br>
+        and<br>
+        Hale Guyer and Linda McDonald Glenn (lmglenn@ucsc.edu)
+    </p>
+    
+</html>
